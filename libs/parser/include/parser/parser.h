@@ -4,11 +4,12 @@
 #include <string>
 #include <vector>
 namespace bpl::parser{
+std::string_view trim(std::string_view);
 
-namespace parsed {
 struct expression {
   std::string name;
   std::vector<expression> args;
+  bool is_variable() const;
 };
 
 struct term{
@@ -19,13 +20,11 @@ struct clause{
   term lhs;
   std::vector<term> rhs;
 };
-}
 
 
-
-namespace ast{
-
-}
+expression parse_expression(std::string_view sv);
+term parse_term(std::string_view sv);
+clause parse_clause(std::string_view sv);
 
 }
 

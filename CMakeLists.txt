@@ -6,4 +6,4 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(libs)
 #add_subdirectory(tests)
-#add_subdirectory(apps)
+add_subdirectory(apps)
