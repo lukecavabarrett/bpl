@@ -90,39 +90,33 @@ bool prompt_stop() {
   }
 }
 
-namespace status {
-bool expectation;
-}
-
 solve_code rec_solve(const bpl::db &storage, std::vector<term> &goal_list, ds::environment &env, const std::vector<std::string> &vars) {
   if (goal_list.empty()) {
     //std::cerr << "found solution" << std::endl;
     describe_solution(storage, env, vars);
     std::cout.flush();
-    status::expectation = false;
     return SOLUTION_CONTINUE;
   }
   term pr = std::move(goal_list.back());
   goal_list.pop_back();
   auto ck = env.get_checkpoint();
 
-  solve_code any_solution = NO_SOLUTION;
+  solve_code state = NO_SOLUTION;
 
   for (const db::predicate::clause &cl : storage.predicates[pr.predicate_id].clauses) {
     uint32_t delta = env.nodes.size();
     if (env.unify_with_clause(pr.args, cl)) {
       for (auto it = cl.rhs.crbegin(); it != cl.rhs.crend(); ++it)goal_list.emplace_back(*it, delta);
+      if(state==SOLUTION_CONTINUE && prompt_stop()) return SOLUTION_STOP;
       auto n = cl.rhs.size();
-      if (any_solution) { if (prompt_stop()) return SOLUTION_STOP; else status::expectation = true; }
-      solve_code ret = rec_solve(storage, goal_list, env, vars);
-      if (ret == SOLUTION_STOP)return SOLUTION_STOP;
+      state = rec_solve(storage, goal_list, env, vars);
+      if (state == SOLUTION_STOP)return SOLUTION_STOP;
       goal_list.resize(goal_list.size() - n);
-      any_solution = std::max(any_solution, ret);
     }
     env.restore_checkpoint(ck);
   }
   goal_list.emplace_back(std::move(pr));
-  return any_solution;
+  return state;
 }
 
 void execute_query(bpl::db &storage, std::vector<parser::term> query_goal) {
@@ -147,12 +141,11 @@ void execute_query(bpl::db &storage, std::vector<parser::term> query_goal) {
     for (const parser::expression &expr : pterm.args)t.args.push_back(make_insert_expr_id(vartable, expr, storage, env));
   }
   std::reverse(goal_list.begin(), goal_list.end());
-  status::expectation = true;
   solve_code ret = rec_solve(storage, goal_list, env, vars);
   switch (ret) {
     case NO_SOLUTION:std::cout << "false." << std::endl;
       break;
-    case SOLUTION_CONTINUE:std::cout << (status::expectation ? "false." : ".") << std::endl;
+    case SOLUTION_CONTINUE:std::cout << "." << std::endl;
       break;
     case SOLUTION_STOP:break;
   }
