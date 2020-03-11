@@ -21,7 +21,7 @@ uint32_t make_insert_expr_id(std::unordered_map<std::string, uint32_t> &vartable
   if (expr.is_variable())return vartable[expr.name];
   //function
   std::vector<uint32_t> children;
-  for (const parser::expression &sexpr : expr.args)make_insert_expr_id(vartable, expr, storage, env);
+  for (const parser::expression &sexpr : expr.args)make_insert_expr_id(vartable, sexpr, storage, env);
   uint32_t fid = storage.function_id(expr.name,expr.args.size());
   uint32_t id = env.new_element_function(fid, std::move(children));
   return id;

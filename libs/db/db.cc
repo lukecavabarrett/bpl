@@ -20,8 +20,9 @@ int db::function_id(std::string_view name, int degree) {
   }
   int fid = functions.size();
   functions.push_back({.name=std::string(name),.degree=degree});
-  if(degree)std::cerr<<"introduced function "<<name<<"/"<<degree<<"."<<std::endl;
-  else std::cerr<<"introduced constant "<<name<<"."<<std::endl;
+  std::cerr<<"\e[3m";
+  if(degree)std::cerr<<"introduced function "<<name<<"/"<<degree<<".""\e[0m"<<std::endl;
+  else std::cerr<<"introduced constant "<<name<<".""\e[0m"<<std::endl;
   symbol_table[std::string(name)]=symbol_descr{.type=symbol_descr::S_FUNCTION,.id=fid};
   return fid;
 }
@@ -37,7 +38,7 @@ int db::predicate_id(std::string_view name, int degree) {
   }
   int pid = predicates.size();
   predicates.push_back({.name=std::string(name),.degree=degree});
-  std::cerr<<"introduced predicate "<<name;if(degree)std::cerr<<"/"<<degree;std::cerr<<"."<<std::endl;
+  std::cerr<<"\e[3m""introduced predicate "<<name;if(degree)std::cerr<<"/"<<degree;std::cerr<<".""\e[0m"<<std::endl;
   symbol_table[std::string(name)]=symbol_descr{.type=symbol_descr::S_PREDICATE,.id=pid};
   return pid;
 }
