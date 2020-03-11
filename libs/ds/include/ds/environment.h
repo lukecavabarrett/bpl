@@ -15,8 +15,9 @@ class environment {
     uint32_t topology;//MSB is 0 -> father_id; MSB 1 -> 4/ rank id, 27/ min_id
     const uint32_t function_id;
     const std::vector<uint32_t> args_id;
-    node_t(int pure_id,int delta); // pure constructor
-    node_t(int delta,int pure_id,const std::vector<int>& original, const int fid);
+    node_t(uint32_t pure_id,uint32_t delta); // pure constructor
+    node_t(uint32_t delta,uint32_t pure_id,const std::vector<int>& original, const uint32_t fid);
+    node_t(uint32_t pure_id,std::vector<uint32_t>&& original, const uint32_t fid);
     node_t();
   };
   typedef uint64_t topology_change; // 32/ node_id, 32/ previous topology value
@@ -31,9 +32,10 @@ class environment {
   checkpoint_t get_checkpoint();
   void restore_checkpoint(checkpoint_t);
 
-  bool unify_with_clause(const std::vector<int>& lhs,const db::predicate::clause& cl);
+  bool unify_with_clause(const std::vector<uint32_t>& lhs,const db::predicate::clause& cl);
   //IF THIS IS SUCCESSFUL, ADD RHS OF CLAUSE ON THE TOP OF THE STACK WITH IDs INCREASED BY ENV.SIZE BEFORE UNIFICATION
-
+  uint32_t new_element_pure();
+  uint32_t new_element_function(uint32_t fid,std::vector<uint32_t>&& args);
 };
 
 }

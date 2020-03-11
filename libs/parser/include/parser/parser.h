@@ -24,6 +24,7 @@ struct clause{
 
 expression parse_expression(std::string_view sv);
 term parse_term(std::string_view sv);
+std::vector<term> parse_term_list(std::string_view sv);
 clause parse_clause(std::string_view sv);
 
 }

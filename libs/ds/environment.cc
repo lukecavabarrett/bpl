@@ -108,7 +108,7 @@ void environment::restore_checkpoint(environment::checkpoint_t ck) {
   uint32_t nodes_sz = ck >> 32;
   nodes.resize(nodes_sz);
 }
-bool environment::unify_with_clause(const std::vector<int> &lhs, const db::predicate::clause &cl) {
+bool environment::unify_with_clause(const std::vector<uint32_t> &lhs, const db::predicate::clause &cl) {
   uint32_t delta = nodes.size();
   //1. add all the new variables
   nodes.reserve(nodes.size()+cl.items.size());
@@ -124,17 +124,29 @@ bool environment::unify_with_clause(const std::vector<int> &lhs, const db::predi
   }
   return ok;
 }
+uint32_t environment::new_element_pure() {
+  int id = nodes.size();
+  nodes.emplace_back(id,0);
+  return id;
+}
+uint32_t environment::new_element_function(uint32_t fid, std::vector<uint32_t> &&args) {
+  int id = nodes.size();
+  nodes.emplace_back(id,std::move(args),fid);
+  return id;
+}
 
-environment::node_t::node_t(int pure_id,int delta) : function_id(0), topology(BOSS_FLAG | (pure_id+delta)) {}
+environment::node_t::node_t(uint32_t pure_id,uint32_t delta) : function_id(0), topology(BOSS_FLAG | (pure_id+delta)) {}
 
 namespace {
-std::vector<uint32_t> make_increased_vector( const std::vector<int> &original,int delta){
+std::vector<uint32_t> make_increased_vector( const std::vector<int> &original,uint32_t delta){
   std::vector<uint32_t> ret(original.begin(),original.end());
   for(auto&x:ret)x+=delta;
   return ret;
 }
+
 }
 
-environment::node_t::node_t(int pure_id,int delta, const std::vector<int> &original, const int fid) : function_id(fid),topology(BOSS_FLAG | (pure_id+delta)),args_id(make_increased_vector(original,delta)) {}
+environment::node_t::node_t(uint32_t pure_id,uint32_t delta, const std::vector<int> &original, const uint32_t fid) : function_id(fid),topology(BOSS_FLAG | (pure_id+delta)),args_id(make_increased_vector(original,delta)) {}
+environment::node_t::node_t(uint32_t pure_id, std::vector<uint32_t> &&original, const uint32_t fid) : function_id(fid),topology(BOSS_FLAG | (pure_id)),args_id(original) {}
 environment::node_t::node_t() : function_id(0) { std::cerr << "Cant call default contructor of a node" << std::endl; throw;}
 }

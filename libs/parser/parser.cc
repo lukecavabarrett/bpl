@@ -46,14 +46,31 @@ term parse_term(std::string_view sv){
   return term{.pred = e.name, .args=std::move(e.args)};
 }
 
-clause parse_clause(std::string_view sv){
+std::vector<term> parse_term_list(std::string_view sv){
   sv = trim(sv);
+  std::vector<term> tl;
   assert(sv.back()=='.');
   sv.remove_suffix(1);
+  sv = trim(sv);
+  while(!sv.empty()) {
+    int it = find_free(sv, ',');
+    tl.push_back(parse_term(sv.substr(0,it)));
+    sv.remove_prefix(it);
+    if(sv.front()==',')sv.remove_prefix(1);
+    else assert(sv.empty());
+  }
+  return std::move(tl);
+}
+
+clause parse_clause(std::string_view sv){
+  sv = trim(sv);
+
   int it = find_free(sv,':');
   clause c;
   if(it==sv.size()){
     //fact
+    assert(sv.back()=='.');
+    sv.remove_suffix(1);
     c.lhs = parse_term(sv);
   } else {
     //rule
@@ -61,14 +78,8 @@ clause parse_clause(std::string_view sv){
     sv.remove_prefix(it);
     assert(sv.front()==':');sv.remove_prefix(1);
     assert(sv.front()=='-');sv.remove_prefix(1);
-    sv = trim(sv);
-    while(!sv.empty()) {
-      it = find_free(sv, ',');
-      c.rhs.push_back(parse_term(sv.substr(0,it)));
-      sv.remove_prefix(it);
-      if(sv.front()==',')sv.remove_prefix(1);
-      else assert(sv.empty());
-    }
+    c.rhs = parse_term_list(sv);
+
   }
   return c;
 }
