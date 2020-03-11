@@ -73,8 +73,8 @@ void describe_solution(const bpl::db &storage, ds::environment &env, const std::
       anypr = true;
     }
   }
-  if (anypr)std::cout << "." << std::endl;
-  if (!anypr)std::cout << "true." << std::endl;
+  if (!anypr)std::cout << "true";
+  std::cout << " ";
 }
 
 enum solve_code { NO_SOLUTION = 0, SOLUTION_CONTINUE = 1, SOLUTION_STOP = 2 };
@@ -90,11 +90,16 @@ bool prompt_stop() {
   }
 }
 
+namespace status {
+bool expectation;
+}
+
 solve_code rec_solve(const bpl::db &storage, std::vector<term> &goal_list, ds::environment &env, const std::vector<std::string> &vars) {
   if (goal_list.empty()) {
     //std::cerr << "found solution" << std::endl;
     describe_solution(storage, env, vars);
     std::cout.flush();
+    status::expectation = false;
     return SOLUTION_CONTINUE;
   }
   term pr = std::move(goal_list.back());
@@ -108,7 +113,7 @@ solve_code rec_solve(const bpl::db &storage, std::vector<term> &goal_list, ds::e
     if (env.unify_with_clause(pr.args, cl)) {
       for (auto it = cl.rhs.crbegin(); it != cl.rhs.crend(); ++it)goal_list.emplace_back(*it, delta);
       auto n = cl.rhs.size();
-      if (any_solution && prompt_stop()) return SOLUTION_STOP;
+      if (any_solution) { if (prompt_stop()) return SOLUTION_STOP; else status::expectation = true; }
       solve_code ret = rec_solve(storage, goal_list, env, vars);
       if (ret == SOLUTION_STOP)return SOLUTION_STOP;
       goal_list.resize(goal_list.size() - n);
@@ -139,6 +144,14 @@ void execute_query(bpl::db &storage, std::vector<parser::term> query_goal) {
     for (const parser::expression &expr : pterm.args)t.args.push_back(make_insert_expr_id(vartable, expr, storage, env));
   }
   std::reverse(goal_list.begin(), goal_list.end());
-  if (rec_solve(storage, goal_list, env, vars) == NO_SOLUTION)std::cout << "false." << std::endl;
+  status::expectation = true;
+  solve_code ret = rec_solve(storage, goal_list, env, vars);
+  switch (ret) {
+    case NO_SOLUTION:std::cout << "false." << std::endl;
+      break;
+    case SOLUTION_CONTINUE:std::cout << (status::expectation ? "false." : ".") << std::endl;
+      break;
+    case SOLUTION_STOP:break;
+  }
 }
 }
