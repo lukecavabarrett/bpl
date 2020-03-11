@@ -49,8 +49,10 @@ class db {
   std::vector<predicate> predicates;
   int predicate_id(std::string_view name,int degree);
 
-  explicit db();
+  explicit db(bool v=true);
   void insert_clause(const parser::clause&);
+  bool verbose;
+  bool toggle_verbosity();
 
 };
 

@@ -69,7 +69,7 @@ void describe_solution(const bpl::db &storage, ds::environment &env, const std::
   std::string preamble = "";
   for (uint32_t i = 0; i < vars.size(); i++) {
     if (print_follow(false, i, i, i, storage, env, vars, preamble)) {
-      preamble = ",\n";
+      preamble = ", ";
       anypr = true;
     }
   }
@@ -137,6 +137,9 @@ void execute_query(bpl::db &storage, std::vector<parser::term> query_goal) {
   for (const parser::term &pterm : query_goal) {
     goal_list.emplace_back();
     term & t = goal_list.back();
+    if(storage.symbol_table.find(pterm.pred) == storage.symbol_table.end()){
+      std::cerr << "fail: predicate "<<pterm.pred<<"\\"<<pterm.args.size()<<" is not defined."<<std::endl;
+    }
     assert(storage.symbol_table.find(pterm.pred) != storage.symbol_table.end());
     assert(storage.symbol_table.find(pterm.pred)->second.type == db::symbol_descr::S_PREDICATE);
     t.predicate_id = storage.symbol_table.find(pterm.pred)->second.id;
