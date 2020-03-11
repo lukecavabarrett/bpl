@@ -2,6 +2,8 @@
 #include <db/db.h>
 #include <query/query.h>
 #include <iostream>
+#include <istream>
+#include <fstream>
 using namespace bpl;
 
 void print_help() {
@@ -22,6 +24,8 @@ void print_help() {
   puts("bpl limitations and known issues:\n"
        "\t- Infix operators are not allowed\n"
        "\t- Integer arithmetic is not allowed\n"
+       "\t- No syntactic sugar for lists\n"
+       "\t- Placeholder _ isn't supported in any expression\n"
        "\t- Cut is not implemented (yet)\n"
        "\t- Malformed input is currently handled poorly and might cause bpl to crash\n"
        "\t- Line editing is not implemented (running rlwrap bpl is suggested instead)\n"
@@ -29,7 +33,21 @@ void print_help() {
   );
 }
 
-int interactive_shell(bool verbose =true) {
+void load_from_file(db &storage, std::string_view cmd) {
+  while (cmd.front() != ' ')cmd.remove_prefix(1);
+  cmd = parser::trim(cmd);
+  std::ifstream infile(std::string(cmd).c_str());
+  int imported = 0;
+  for (std::string line; std::getline(infile, line);) {
+    std::string_view cmd = parser::trim(line);
+    if (!cmd.empty() && cmd.front() != '%') {
+      storage.insert_clause(parser::parse_clause(cmd));
+      ++imported;
+    }
+  }
+}
+
+int interactive_shell(bool verbose = true) {
   constexpr std::string_view dbmode_prompt = "|: ", querymode_prompt = "?- ";
   bool dbmode = true;
   db storage(verbose);
@@ -46,6 +64,8 @@ int interactive_shell(bool verbose =true) {
         case 'h':print_help();
           break;
         case 'v':storage.toggle_verbosity();
+          break;
+        case 'l':load_from_file(storage, cmd);
           break;
       }
     } else {
