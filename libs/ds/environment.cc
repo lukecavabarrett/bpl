@@ -119,7 +119,7 @@ bool environment::unify_with_clause(const std::vector<uint32_t> &lhs, const db::
   //2. proceed with unification
   bool ok = true;
   for(int i = 0;i<lhs.size();++i){
-    ok&=unify(lhs[i],delta+i);
+    ok&=unify(lhs[i],cl.lhs_args[i]+delta);
     if(!ok)break;
   }
   return ok;
