@@ -30,9 +30,9 @@ uint32_t environment::get_boss_id(uint32_t id) {
   uint32_t b = get_boss_id(t);
   if (b != t) {
     log_previous(id, t);
-    nodes[id].topology = t;
+    nodes[id].topology = b;
   }
-  return t;
+  return b;
 }
 
 
