@@ -6,7 +6,7 @@ using namespace bpl;
 int main(){
 
 
-  constexpr std::string_view dbmode_prompt = ">: ", querymode_prompt = "?: ";
+  constexpr std::string_view dbmode_prompt = "|: ", querymode_prompt = "?- ";
 
   bool dbmode = true;
   db storage;

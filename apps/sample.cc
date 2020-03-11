@@ -36,11 +36,16 @@ void occurscheck_test(){
 void print_test(){
   db storage;
   storage.insert_clause(parser::parse_clause("eq(A,A)."));
-  //bugs:
   query::execute_query(storage,parser::parse_term_list("eq(X,X)."));
+}
+
+void test2(){
+  db storage;
+  storage.insert_clause(parser::parse_clause("eq(A,A)."));
+  query::execute_query(storage,parser::parse_term_list("eq(X,Y), eq(X,1)."));
 }
 
 
 int main(){
-print_test();
+test2();
 }
