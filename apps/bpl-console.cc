@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
     print_help();
     exit(0);
   }
-  print_version(true);
   bool quiet = search_arg("-q", argc, argv) || search_arg("--quiet", argc, argv);
+  if(!quiet)print_version(true);
   return interactive_shell(!quiet);
 }

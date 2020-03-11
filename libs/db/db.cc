@@ -6,6 +6,11 @@ namespace bpl {
 
 db::db(bool v) : verbose(v) {
   functions.push_back({.name="__pure_placeholder"});
+  functions.push_back({.name="__emptylist",.degree=0});
+  symbol_table["__emptylist"]=symbol_descr{.type=symbol_descr::S_FUNCTION, .id=1};
+  functions.push_back({.name="__cons",.degree=2});
+  symbol_table["__cons"]=symbol_descr{.type=symbol_descr::S_FUNCTION, .id=2};
+
 }
 
 int db::function_id(std::string_view name, int degree) {

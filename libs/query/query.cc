@@ -40,24 +40,36 @@ struct term {
   }
 };
 
-bool print_follow(bool dirty, int initial, int i, int lt, const bpl::db &storage, ds::environment &env, const std::vector<std::string> &vars, std::string_view preamble) {
+bool print_follow(bool dirty, int initial, int i, int lt,bool enclosed, const bpl::db &storage, ds::environment &env, const std::vector<std::string> &vars, std::string_view preamble) {
   const ds::environment::node_t &n = env.nodes[env.get_boss_id(i)];
   uint32_t min_id = n.topology & 0x7ffffffu;
   if (n.function_id == 0 || min_id < lt) {
     if (!dirty && min_id == initial)return false;
     //pure or already described
     if (!dirty)std::cout << preamble << vars[i] << " = ";
+    if(enclosed)std::cout<<"|";
     if (min_id < vars.size())std::cout << vars[min_id];
     else std::cout << "_" << min_id;
     return true;
   }
   if (initial == lt)++lt; //increase lt from second iteration onwards
   if (!dirty)std::cout << preamble << vars[i] << " = ";
+  if(n.function_id==1)/*empty*/{
+    if(!enclosed)std::cout<<"[]";
+    return true;
+  } else if(n.function_id==2)/*cons*/{
+    std::cout<<(enclosed?",":"[");
+    print_follow(true,initial,n.args_id[0],lt, false,storage,env,vars,preamble);
+    print_follow(true,initial,n.args_id[1],lt, true,storage,env,vars,preamble);
+    if(!enclosed)std::cout<<"]";
+    return true;
+  }
+  if(enclosed)std::cout<<"|";
   std::cout << storage.functions[n.function_id].name;
   if (n.args_id.empty())return true;
   std::cout << '(';
   for (int j = 0; j < n.args_id.size(); ++j) {
-    print_follow(true, initial, n.args_id[j], lt, storage, env, vars, preamble);
+    print_follow(true, initial, n.args_id[j], lt,false, storage, env, vars, preamble);
     std::cout << (j == (n.args_id.size() - 1) ? ')' : ',');
   }
   return true;
@@ -68,7 +80,7 @@ void describe_solution(const bpl::db &storage, ds::environment &env, const std::
   bool anypr = false;
   std::string preamble = "";
   for (uint32_t i = 0; i < vars.size(); i++) {
-    if (print_follow(false, i, i, i, storage, env, vars, preamble)) {
+    if (print_follow(false, i, i, i,false, storage, env, vars, preamble)) {
       preamble = ", ";
       anypr = true;
     }

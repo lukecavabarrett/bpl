@@ -47,5 +47,7 @@ void test2(){
 
 
 int main(){
-test2();
+  db storage;
+  storage.insert_clause(parser::parse_clause("eq(A,A)."));
+  query::execute_query(storage,parser::parse_term_list("eq([1,2,3],X)."));
 }
