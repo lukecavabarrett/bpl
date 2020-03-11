@@ -147,6 +147,6 @@ std::vector<uint32_t> make_increased_vector( const std::vector<int> &original,ui
 }
 
 environment::node_t::node_t(uint32_t pure_id,uint32_t delta, const std::vector<int> &original, const uint32_t fid) : function_id(fid),topology(BOSS_FLAG | (pure_id+delta)),args_id(make_increased_vector(original,delta)) {}
-environment::node_t::node_t(uint32_t pure_id, std::vector<uint32_t> &&original, const uint32_t fid) : function_id(fid),topology(BOSS_FLAG | (pure_id)),args_id(original) {}
+environment::node_t::node_t(uint32_t pure_id, std::vector<uint32_t> &&original, const uint32_t fid) : function_id(fid),topology(BOSS_FLAG | (pure_id)),args_id(std::move(original)) {}
 environment::node_t::node_t() : function_id(0) { std::cerr << "Cant call default contructor of a node" << std::endl; throw;}
 }
