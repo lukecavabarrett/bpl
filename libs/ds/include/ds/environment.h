@@ -10,8 +10,6 @@ namespace bpl::ds {
 class environment {
  public:
   struct node_t {
-    //TODO: later, define sensible sizes for everything and pack well these structs
-
     uint32_t topology;//MSB is 0 -> father_id; MSB 1 -> 4/ rank id, 27/ min_id
     const uint32_t function_id;
     const std::vector<uint32_t> args_id;
